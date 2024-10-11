@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    
+    <div class ="calculator">
+        <div class ="display">
+            <input type="text" class="screen">
+        </div>
+
+        <form id ="counter">
+
+            <input type="button" id="style" class="clear" value="AC">
+            <input type="button" id="style" class="btn" value=".">
+            <input type="button" id="style" class="btn" value="%">
+            <input type="button" id="style" class="btn" value="/">
+
+            <input type="button" id="style" class="btn" value="7">
+            <input type="button" id="style" class="btn" value="8">
+            <input type="button" id="style" class="btn" value="9">
+            <input type="button" id="style" class="btn" value="*">
+
+            <input type="button" id="style" class="btn" value="4">
+            <input type="button" id="style" class="btn" value="5">
+            <input type="button" id="style" class="btn" value="6">
+            <input type="button" id="style" class="btn" value="-">
+
+            <input type="button" id="style" class="btn" value="1">
+            <input type="button" id="style" class="btn" value="2">
+            <input type="button" id="style" class="btn" value="3">
+            <input type="button" id="style" class="btn" value="+">
+
+            <input type="button" id="style" class="btn" value="0">
+            <input type="button" id="style" class="btn" value="00">
+            <input type="button" id="style" class="btn" value="x">
+            <input type="button" id="style" class="equal" value="=">
+
+        </form>
+
+
+    </div>
+
+    <script>
+        function calculator () {
+    let display = document.querySelector ('.screen')
+    let buttons = document.querySelectorAll('.btn')
+    let clean = document.querySelector('.clear')
+    let equal = document.querySelector ('.equal')
+
+    let operation = '';
+
+    buttons.forEach(function(button) {
+        button.addEventListener('click', function(event){
+        let value= event.target.value;                      //To get the value from the button
+
+        if(['+', '-', '*', '/'].includes(value)) {
+            operation = value
+            display.value += `${value}`         
+        } else {
+            display.value += value
+        }
+        })
+    })
+
+    //To clear the screen
+    clean.addEventListener('click', function(){
+        display.value = '';
+    })
+
+
+   //To evaluate the expression when '=' is clicked
+    equal.addEventListener('click', function() {
+        let expression = display.value.split(/([+\-*/])/)
+
+        let num1 = parseFloat(expression[0])
+        let operator = expression [1]
+        let num2 = parseFloat(expression[2])
+    
+
+
+let endpoint;
+switch(operator) {
+    case '+':
+    endpoint = '/api/addition'
+    break
+    case '-':
+    endpoint = '/api/subtraction';
+    break
+    case '*':
+    endpoint = '/api/multiplication';
+    break;
+    case '/':
+    endpoint = '/api/division';
+    break
+}
+
+//Send the post request to the API
+fetch(`http://localhost:5500${endpoint}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+        num1: num1,
+        num2: num2
+
+  }),
+
+})
+
+.then(response => response.json())
+
+.then(data=> {
+    if(data.error) {
+        display.value=data.error;
+    } else {
+        display.value = data.result
+    }
+})
+
+.catch (error => {
+    console.error('Fel', error)
+    display.value ='Fel'
+})
+})
+}
+calculator()
+    </script>
+</body>
+</html>
