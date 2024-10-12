@@ -10,35 +10,35 @@
     
     <div class ="calculator">
         <div class ="display">
-            <input type="text" class="screen">
+            <input type="text" class="screen" id="screen" readonly> <!--Shows the numbers, operators and result-->
         </div>
 
         <form id ="counter">
 
-            <input type="button" id="style" class="clear" value="AC">
-            <input type="button" id="style" class="btn" value=".">
-            <input type="button" id="style" class="btn" value="%">
-            <input type="button" id="style" class="btn" value="/">
+            <!-- onclick -> when you click a button the "appendToScreen function will run."-->
+            <input type="button" class="clear" value="AC" onclick = "clearScreen ()">
+            <input type="button" class="btn" value="." onclick = "appendToScreen ('.')"> 
+            <input type="button" class="btn" value="%" onclick ="appendToScreen ('%')">
+            <input type="button" class="btn" value="/" onclick ="appendToScreen ('/')">
 
-            <input type="button" id="style" class="btn" value="7">
-            <input type="button" id="style" class="btn" value="8">
-            <input type="button" id="style" class="btn" value="9">
-            <input type="button" id="style" class="btn" value="*">
+            <input type="button" class="btn" value="7" onclick = "appendToScreen ('7')">
+            <input type="button" class="btn" value="8" onclick = "appendToScreen ('8')">
+            <input type="button" class="btn" value="9" onclick = "appendToScreen ('9')">
+            <input type="button" class="btn" value="*" onclick = "appendToScreen ('*')">
 
-            <input type="button" id="style" class="btn" value="4">
-            <input type="button" id="style" class="btn" value="5">
-            <input type="button" id="style" class="btn" value="6">
-            <input type="button" id="style" class="btn" value="-">
+            <input type="button"  class="btn" value="4" onclick = "appendToScreen ('4')">
+            <input type="button"  class="btn" value="5" onclick = "appendToScreen ('5')" >
+            <input type="button"  class="btn" value="6" onclick = "appendToScreen ('6')" >
+            <input type="button"  class="btn" value="-" onclick = "appendToScreen ('-')">
 
-            <input type="button" id="style" class="btn" value="1">
-            <input type="button" id="style" class="btn" value="2">
-            <input type="button" id="style" class="btn" value="3">
-            <input type="button" id="style" class="btn" value="+">
+            <input type="button"  class="btn" value="1" onclick = "appendToScreen ('1')">
+            <input type="button"  class="btn" value="2" onclick = "appendToScreen ('2')">
+            <input type="button"  class="btn" value="3" onclick = "appendToScreen ('3')">
+            <input type="button"  class="btn" value="+" onclick = "appendToScreen ('+')">
 
-            <input type="button" id="style" class="btn" value="0">
-            <input type="button" id="style" class="btn" value="00">
-            <input type="button" id="style" class="btn" value="x">
-            <input type="button" id="style" class="equal" value="=">
+            <input type="button"  class="btn" value="0" onclick = "appendToScreen ('0')">
+            <input type="button"  class="btn" value="00" onclick = "appendToScreen ('00')">
+            <input type="button"  class="equal" value="=" onclick = "calculateResult()">
 
         </form>
 
@@ -46,41 +46,41 @@
     </div>
 
     <script>
-        function calculator () {
-    let display = document.querySelector ('.screen')
-    let buttons = document.querySelectorAll('.btn')
-    let clean = document.querySelector('.clear')
-    let equal = document.querySelector ('.equal')
 
-    let operation = '';
+// To show the number or operator on the screen when a user clicks a button.
+function appendToScreen (value) {
+    const screen = document.getElementById('screen') //Get an HTML element with id screen
+    screen.value += value 
+}
 
-    buttons.forEach(function(button) {
-        button.addEventListener('click', function(event){
-        let value= event.target.value;                      //To get the value from the button
+// To clear the screen when clicking "AC"
+function clearScreen () {
+    const screen = document.getElementById('screen') //Get an HTML element with id screen
+    screen.value = ''
+}
 
-        if(['+', '-', '*', '/'].includes(value)) {
-            operation = value
-            display.value += `${value}`         
-        } else {
-            display.value += value
-        }
-        })
-    })
+//To calculate the result
+function calculateResult () {
+    const screen = document.getElementById('screen') //Get an HTML element with id screen
+    let expression = screen.value; //Gets the value that the user has clicked in. Stores it in the variable "expression"
 
-    //To clear the screen
-    clean.addEventListener('click', function(){
-        display.value = '';
-    })
+    let operator;     
 
+    //To check which operator is used.
+    if(expression.includes('+')) {      
+        operator = '+';
+    } else if (expression.includes('-')){
+        operator = '-';
+    } else if (expression.includes('*')){
+        operator = '*';
+    } else if (expression.includes('/')){
+        operator = '/';
+    } else {
+        screen.value = 'Invalid'
+        return;
+    }
 
-   //To evaluate the expression when '=' is clicked
-    equal.addEventListener('click', function() {
-        let expression = display.value.split(/([+\-*/])/)
-
-        let num1 = parseFloat(expression[0])
-        let operator = expression [1]
-        let num2 = parseFloat(expression[2])
-    
+    const [num1, num2] = expression.split(operator) //Splits the array with an operator.
 
 
 let endpoint;
@@ -97,39 +97,41 @@ switch(operator) {
     case '/':
     endpoint = '/api/division';
     break
+    default:
+        screen.value ='error'
+        return;
 }
 
 //Send the post request to the API
-fetch(`http://localhost:5500${endpoint}`, {
+fetch(`http://localhost:5510${endpoint}`, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/json',     //Tell the server that the data in the req is in JSON format
     },
-    body: JSON.stringify({
-        num1: num1,
-        num2: num2
+    body: JSON.stringify({                    //What is sent in the request.
+        num1: parseFloat(num1),
+        num2: parseFloat(num2)
 
   }),
 
 })
 
-.then(response => response.json())
+.then(response => response.json())           
 
 .then(data=> {
-    if(data.error) {
-        display.value=data.error;
+    if(data.error) {                        
+        screen.value=data.error;            // If there is an Error in the response show error. 
     } else {
-        display.value = data.result
-    }
+        screen.value = data.result         //Otherwise the result will be shown on the screen
+    } 
 })
 
-.catch (error => {
-    console.error('Fel', error)
-    display.value ='Fel'
-})
+.catch (error => {                          
+    console.error('Error', error)       
+    screen.value ='Error'                     //Will be shown to the user
 })
 }
-calculator()
+
     </script>
 </body>
 </html>
